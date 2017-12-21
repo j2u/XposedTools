@@ -1,1 +1,1 @@
-include ':app', ':xcmod', ':test'
+include ':app', ':xcmod', ':test', ':hookaj'

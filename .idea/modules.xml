@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/XposedTools.iml" filepath="$PROJECT_DIR$/.idea/XposedTools.iml" />
       <module fileurl="file://$PROJECT_DIR$/XposedTools.iml" filepath="$PROJECT_DIR$/XposedTools.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hookaj/hookaj.iml" filepath="$PROJECT_DIR$/hookaj/hookaj.iml" />
       <module fileurl="file://$PROJECT_DIR$/test/test.iml" filepath="$PROJECT_DIR$/test/test.iml" />
       <module fileurl="file://$PROJECT_DIR$/xcmod/xcmod.iml" filepath="$PROJECT_DIR$/xcmod/xcmod.iml" />
     </modules>
