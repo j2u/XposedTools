@@ -1,18 +1,18 @@
 package com.imchen.hookaj
 
 import android.app.AndroidAppHelper
-import android.app.Instrumentation
 import android.content.Context
 import android.net.LocalSocket
+import android.os.Bundle
 import android.util.Log
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
-import java.util.*
 
 /**
  * Created by im on 17/12/20.
@@ -200,16 +200,38 @@ class HookMain : IXposedHookLoadPackage {
                     Log.d(TAG, "Script4RunObj->" + param!!.args[0].toString())
                 }
             })
+            val msClz=XposedHelpers.findClass("com.cyjh.mobileanjian.model.bean.MyAppScript",lpparam.classLoader)
+            XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.utils.IntentUtil", lpparam.classLoader,
+                    "toMyScriptDetailInfoActivity", Context::class.java, msClz, object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam?) {
+                    Log.d(TAG, "toMyScriptDetailInfoActivity->args1:" + param!!.args[1].toString())
+                }
+            })
 
             XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.activity.MainActivity", lpparam.classLoader,
-                    "onCreate", object : XC_MethodHook() {
+                    "onCreate", Bundle::class.java,object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam?) {
-                    super.afterHookedMethod(param)
+                    val context:Context= param!!.thisObject as Context
                     var args0 = "/storage/emulated/0/MobileAnJian/MQTemp"
                     var args1 = readscript("/storage/emulated/0/MobileAnJian/Record/我的录制1(f3f7734f-7f5a-40a8-bf4a-cc3d5bb3b84d).mq")
                     var args2 = null
                     var args3 = "/storage/emulated/0/MobileAnJian/MQTemp/compile.lc"
+//                    initDataAfterView(lpparam)
+//                    toRecordAppScriptActivity(lpparam,context)
 
+                }
+            })
+
+            XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.activity.GuiActivity", lpparam.classLoader,
+                    "onCreate", Bundle::class.java,object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam?) {
+                    val context:Context= param!!.thisObject as Context
+                    initDataAfterView(lpparam,context)
+                }
+
+                override fun afterHookedMethod(param: MethodHookParam?) {
+                    val context:Context= param!!.thisObject as Context
+                    toRecordAppScriptActivity(lpparam,context)
                 }
             })
 
@@ -221,19 +243,42 @@ class HookMain : IXposedHookLoadPackage {
                                      tempPath: String, scriptContent: String, nullStr: String,
                                      lcPath: String) {
         val ssm = "com.cyjh.mobileanjian.view.floatview.suplus.StartScriptManager"
-        val sdm="com.cyjh.mobileanjian.view.floatview.help.ScripDateManager"
-        val scriptCLz="com.cyjh.mobileanjian.view.floatview.model"
+        val sdm = "com.cyjh.mobileanjian.view.floatview.help.ScripDateManager"
+        val scriptCLz = "com.cyjh.mobileanjian.view.floatview.model"
 
         val ssmClz = XposedHelpers.findClass(ssm, lpparam.classLoader)
-        val smClz=XposedHelpers.findClass(sdm,lpparam.classLoader)
-        val smInstance=XposedHelpers.callStaticMethod(smClz,"getInstance")
-        XposedHelpers.callMethod(smInstance,"setScript",scriptCLz)
+        val smClz = XposedHelpers.findClass(sdm, lpparam.classLoader)
+        val smInstance = XposedHelpers.callStaticMethod(smClz, "getInstance")
+        XposedHelpers.callMethod(smInstance, "setScript", scriptCLz)
         val context = AndroidAppHelper.currentApplication().applicationContext
 //        val method = XposedHelpers.findMethodBestMatch(clz,
 //                "startRunRecordScript", Context::class.java)
 
         val obj = XposedHelpers.callStaticMethod(ssmClz, "getInstance")
-        XposedHelpers.callMethod(obj, "startRunRecordScript",context )
+        XposedHelpers.callMethod(obj, "startRunRecordScript", context)
+    }
+
+    fun toRecordAppScriptActivity(lpparam: XC_LoadPackage.LoadPackageParam,context: Context){
+        val clz=XposedHelpers.findClass("com.cyjh.mobileanjian.utils.IntentUtil",lpparam.classLoader)
+        val clzv4 ="android.support.v4.app"
+//        val context=AndroidAppHelper.currentApplication().applicationContext
+//        val v4Clz=XposedHelpers.findClass(clzv4,lpparam.classLoader)
+//        val field=XposedHelpers.findField(v4Clz,"mActivity")
+//        val context:Context= field.get(v4Clz) as Context
+        XposedHelpers.callStaticMethod(clz,"toRecordAppScriptActivity",
+                context)
+    }
+
+    fun initDataAfterView(lpparam: XC_LoadPackage.LoadPackageParam,context: Context){
+        XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.activity.GuiActivity",lpparam.classLoader,
+                "initDataAfterView",object :XC_MethodReplacement(){
+            override fun replaceHookedMethod(param: MethodHookParam?) {
+//                val context=AndroidAppHelper.currentApplication().applicationContext
+                Log.e("xposed_hook_anjian","fuckffffffffffffffffffffffffffff")
+                toRecordAppScriptActivity(lpparam,context)
+//                Toast.makeText(context,"sbbbbb",Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun readscript(path: String): String {
