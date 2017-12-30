@@ -2,6 +2,7 @@ package com.imchen.hookaj
 
 import android.app.AndroidAppHelper
 import android.content.Context
+import android.content.Intent
 import android.net.LocalSocket
 import android.os.Bundle
 import android.util.Log
@@ -84,9 +85,6 @@ class HookMain : IXposedHookLoadPackage {
 
             XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.ipc.utils.CLog", lpparam.classLoader,
                     "e", String::class.java, String::class.java, object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam?) {
-                }
-
                 override fun beforeHookedMethod(param: MethodHookParam?) {
                     Log.e("xposed_hook_anjian", "CLog.e->" + param!!.args[1])
                 }
@@ -94,18 +92,12 @@ class HookMain : IXposedHookLoadPackage {
 
             XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.ipc.utils.CLog", lpparam.classLoader,
                     "w", String::class.java, String::class.java, object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam?) {
-                }
-
                 override fun beforeHookedMethod(param: MethodHookParam?) {
                     Log.e("xposed_hook_anjian", "CLog.w->" + param!!.args[1])
                 }
             })
             XposedHelpers.findAndHookMethod("com.cyjh.mobileanjian.ipc.utils.CLog", lpparam.classLoader,
                     "d", String::class.java, String::class.java, object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam?) {
-                }
-
                 override fun beforeHookedMethod(param: MethodHookParam?) {
                     Log.e("xposed_hook_anjian", "CLog.e->" + param!!.args[1])
                 }
@@ -230,7 +222,11 @@ class HookMain : IXposedHookLoadPackage {
 //                    initDataAfterView(lpparam)
 //                    toRecordAppScriptActivity(lpparam,context)
 //                    preInjectByFile(lpparam)
+//                    MyInjector(lpparam)
 //                    injectRunScript(lpparam)
+                    //please run !!!!!!!!!!!!!!!!
+                    toLauncher(context)
+                    compileScriptAndRun(lpparam)
                 }
             })
 
@@ -313,6 +309,12 @@ class HookMain : IXposedHookLoadPackage {
         }
     }
 
+    fun MyInjector(lpparam: XC_LoadPackage.LoadPackageParam){
+        val scriptPath="/storage/emulated/0/MobileAnJian/Record/我的录制1(8d59f476-2aab-4c5a-b82a-272f5ed3d57e).prop"
+        val clz=XposedHelpers.findClass("com.cyjh.mobileanjian.inject.MyInjecter",lpparam.classLoader)
+        XposedHelpers.callMethod(clz.newInstance(),"preInjectByFile",scriptPath)
+    }
+
     private fun  preInjectByFile(lpparam: XC_LoadPackage.LoadPackageParam){
         val clz=XposedHelpers.findClass("com.cyjh.mobileanjian.activity.main.MyScriptDetailInfoActivity",lpparam.classLoader)
         val scriptPath="/storage/emulated/0/MobileAnJian/Record/我的录制1(8d59f476-2aab-4c5a-b82a-272f5ed3d57e).prop"
@@ -328,6 +330,23 @@ class HookMain : IXposedHookLoadPackage {
         val obj = XposedHelpers.callStaticMethod(srhCLz, "getInstance")
         XposedHelpers.callMethod(obj, "injectRunScript", lcPath, atcPath, uicfg, id)
         Log.e("xposed_hook_anjian", "call -> injectRunScript")
+    }
+
+    private fun compileScriptAndRun(lpparam: XC_LoadPackage.LoadPackageParam){
+        val scriptPath="/storage/emulated/0/MobileAnJian/Record/我的录制1(8d59f476-2aab-4c5a-b82a-272f5ed3d57e).prop"
+        val scriptPath2="/storage/emulated/0/MobileAnJian/Record/我的录制2(9e99b408-f8d6-4e1e-97cc-ea65d9ce6552).prop"
+        val lsmClz=XposedHelpers.findClass("com.cyjh.mobileanjian.manager.LocalScriptManager",lpparam.classLoader)
+        val lsmObj=XposedHelpers.callStaticMethod(lsmClz,"getInstance")
+        val script=XposedHelpers.callMethod(lsmObj,"getScript",scriptPath)
+        val srhClz=XposedHelpers.findClass("com.cyjh.mobileanjian.view.floatview.help.ScriptRunHelp",lpparam.classLoader)
+        val obj=XposedHelpers.callStaticMethod(srhClz,"getInstance")
+        XposedHelpers.callMethod(obj,"compileScriptAndRun",script)
+    }
+
+    private fun toLauncher(context:Context){
+        val intent=Intent(Intent.ACTION_MAIN,null)
+        intent.addCategory(Intent.CATEGORY_HOME)
+        context.startActivity(intent)
     }
 
     private fun compileScript() {
